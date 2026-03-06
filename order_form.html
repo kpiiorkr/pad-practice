@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>발주 입력 시스템</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
+
+  :root {
+    --bg: #f4f6fb;
+    --white: #ffffff;
+    --border: #dde3ef;
+    --accent: #2563eb;
+    --accent-light: #eff4ff;
+    --danger: #dc2626;
+    --success: #16a34a;
+    --text: #1e293b;
+    --muted: #64748b;
+    --label: #374151;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans KR', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 40px 20px;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 680px;
+  }
+
+  .page-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    color: var(--text);
+  }
+
+  .page-sub {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 28px;
+  }
+
+  .card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 32px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+
+  .card-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 22px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .form-group.full {
+    grid-column: 1 / -1;
+  }
+
+  label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--label);
+  }
+
+  label .required {
+    color: var(--danger);
+    margin-left: 2px;
+  }
+
+  input, select, textarea {
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: 'Noto Sans KR', sans-serif;
+    color: var(--text);
+    background: var(--white);
+    transition: border 0.15s, box-shadow 0.15s;
+    outline: none;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+  }
+
+  input[readonly] {
+    background: #f8faff;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 80px;
+  }
+
+  .actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 8px;
+  }
+
+  button {
+    padding: 11px 28px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: 'Noto Sans KR', sans-serif;
+    cursor: pointer;
+    transition: all 0.15s;
+    border: none;
+  }
+
+  .btn-reset {
+    background: var(--white);
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+
+  .btn-reset:hover { background: #f1f5f9; }
+
+  .btn-submit {
+    background: var(--accent);
+    color: white;
+  }
+
+  .btn-submit:hover { background: #1d4ed8; }
+
+  /* 결과 영역 */
+  #resultArea {
+    display: none;
+    margin-top: 20px;
+  }
+
+  .result-card {
+    background: #f0fdf4;
+    border: 1px solid #86efac;
+    border-radius: 14px;
+    padding: 24px 28px;
+  }
+
+  .result-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--success);
+    margin-bottom: 14px;
+  }
+
+  .result-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #dcfce7;
+    font-size: 14px;
+  }
+
+  .result-row:last-child { border-bottom: none; }
+  .result-row .r-label { color: var(--muted); }
+  .result-row .r-value {
+    font-weight: 600;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+  }
+
+  #orderNumber {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--accent);
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="page-title">🛒 발주 입력 시스템</div>
+  <div class="page-sub">품목 정보를 입력하고 발주를 등록하세요. · PAD 실습용</div>
+
+  <div class="card">
+    <div class="card-title">발주 정보 입력</div>
+    <div class="form-grid">
+
+      <div class="form-group">
+        <label>발주번호 <span class="required">*</span></label>
+        <input type="text" id="orderNo" readonly placeholder="자동생성" />
+      </div>
+
+      <div class="form-group">
+        <label>발주일자 <span class="required">*</span></label>
+        <input type="text" id="orderDate" placeholder="YYYY-MM-DD" />
+      </div>
+
+      <div class="form-group">
+        <label>품목코드 <span class="required">*</span></label>
+        <select id="itemCode">
+          <option value="">-- 선택 --</option>
+          <option value="ITM-001">ITM-001</option>
+          <option value="ITM-002">ITM-002</option>
+          <option value="ITM-003">ITM-003</option>
+          <option value="ITM-004">ITM-004</option>
+          <option value="ITM-005">ITM-005</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>품목명 <span class="required">*</span></label>
+        <input type="text" id="itemName" placeholder="품목명 입력" />
+      </div>
+
+      <div class="form-group">
+        <label>발주 수량 (EA) <span class="required">*</span></label>
+        <input type="text" id="orderQty" placeholder="0" />
+      </div>
+
+      <div class="form-group">
+        <label>납품 희망일 <span class="required">*</span></label>
+        <input type="text" id="deliveryDate" placeholder="YYYY-MM-DD" />
+      </div>
+
+      <div class="form-group">
+        <label>담당자명 <span class="required">*</span></label>
+        <input type="text" id="manager" placeholder="담당자 이름" />
+      </div>
+
+      <div class="form-group">
+        <label>협력사명</label>
+        <input type="text" id="supplier" placeholder="협력사 입력" />
+      </div>
+
+      <div class="form-group full">
+        <label>비고</label>
+        <textarea id="remark" placeholder="특이사항 입력"></textarea>
+      </div>
+
+    </div>
+
+    <div class="actions">
+      <button class="btn-reset" onclick="resetForm()">초기화</button>
+      <button class="btn-submit" id="submitBtn" onclick="submitOrder()">발주 등록</button>
+    </div>
+  </div>
+
+  <div id="resultArea">
+    <div class="result-card">
+      <div class="result-title">✅ 발주가 성공적으로 등록되었습니다</div>
+      <div class="result-row">
+        <span class="r-label">발주번호</span>
+        <span class="r-value" id="res-orderNo">—</span>
+      </div>
+      <div class="result-row">
+        <span class="r-label">발주일자</span>
+        <span class="r-value" id="res-orderDate">—</span>
+      </div>
+      <div class="result-row">
+        <span class="r-label">품목코드</span>
+        <span class="r-value" id="res-itemCode">—</span>
+      </div>
+      <div class="result-row">
+        <span class="r-label">품목명</span>
+        <span class="r-value" id="res-itemName">—</span>
+      </div>
+      <div class="result-row">
+        <span class="r-label">발주수량</span>
+        <span class="r-value" id="res-qty">—</span>
+      </div>
+      <div class="result-row">
+        <span class="r-label">납품 희망일</span>
+        <span class="r-value" id="res-delivery">—</span>
+      </div>
+      <div class="result-row">
+        <span class="r-label">담당자</span>
+        <span class="r-value" id="res-manager">—</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // 발주번호 자동생성
+  function generateOrderNo() {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth()+1).padStart(2,'0');
+    const d = String(now.getDate()).padStart(2,'0');
+    const seq = String(Math.floor(Math.random()*900)+100);
+    return `ORD-${y}${m}${d}-${seq}`;
+  }
+
+  
+  window.onload = function() {
+    document.getElementById('orderNo').value = generateOrderNo();
+  };
+
+  function submitOrder() {
+    const fields = ['orderDate','itemCode','itemName','orderQty','deliveryDate','manager'];
+    for (const f of fields) {
+      if (!document.getElementById(f).value) {
+        alert('필수 항목을 모두 입력해주세요.');
+        return;
+      }
+    }
+
+    document.getElementById('res-orderNo').textContent   = document.getElementById('orderNo').value;
+    document.getElementById('res-orderDate').textContent = document.getElementById('orderDate').value;
+    document.getElementById('res-itemCode').textContent  = document.getElementById('itemCode').value;
+    document.getElementById('res-itemName').textContent  = document.getElementById('itemName').value;
+    document.getElementById('res-qty').textContent       = document.getElementById('orderQty').value + ' EA';
+    document.getElementById('res-delivery').textContent  = document.getElementById('deliveryDate').value;
+    document.getElementById('res-manager').textContent   = document.getElementById('manager').value;
+
+    document.getElementById('resultArea').style.display = 'block';
+    document.getElementById('resultArea').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function resetForm() {
+    document.getElementById('itemCode').value  = '';
+    document.getElementById('itemName').value  = '';
+    document.getElementById('orderQty').value  = '';
+    document.getElementById('manager').value   = '';
+    document.getElementById('supplier').value  = '';
+    document.getElementById('remark').value    = '';
+    document.getElementById('orderNo').value   = generateOrderNo();
+    document.getElementById('resultArea').style.display = 'none';
+  }
+</script>
+
+</body>
+</html>
