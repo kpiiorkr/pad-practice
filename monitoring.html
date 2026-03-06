@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>재고 모니터링 시스템</title>
+<style>
+  body { font-family: '맑은 고딕', sans-serif; background: #f0f2f5; padding: 32px; color: #1a1a2e; }
+  h2 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+  .subtitle { font-size: 13px; color: #888; margin-bottom: 20px; }
+
+  .controls {
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 24px;
+  }
+
+  .btn-start {
+    padding: 9px 24px; background: #2563eb; color: #fff;
+    border: none; border-radius: 7px; font-size: 14px;
+    font-family: '맑은 고딕', sans-serif;
+    font-weight: 600; cursor: pointer;
+  }
+  .btn-start:hover { background: #1d4ed8; }
+  .btn-stop {
+    padding: 9px 24px; background: #fff; color: #dc2626;
+    border: 1px solid #dc2626; border-radius: 7px; font-size: 14px;
+    font-family: '맑은 고딕', sans-serif;
+    font-weight: 600; cursor: pointer;
+  }
+
+  #timerDisplay {
+    font-size: 13px; color: #64748b;
+  }
+
+  table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 6px rgba(0,0,0,0.07); }
+  th { background: #1e3a5f; color: #fff; padding: 11px 14px; text-align: left; font-size: 13px; font-weight: 600; }
+  td { padding: 11px 14px; font-size: 13px; border-bottom: 1px solid #eef0f4; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #f5f8ff; }
+
+  .status-정상 { color: #16a34a; font-weight: 700; }
+  .status-주의 { color: #d97706; font-weight: 700; }
+  .status-부족 { color: #dc2626; font-weight: 700; }
+
+  .qty-cell { font-weight: 600; }
+  .qty-low  { color: #dc2626; }
+
+  /* PAD 전용 숨김 영역 */
+  #padSignal {
+    margin-top: 20px;
+    background: #fff;
+    border-radius: 10px;
+    padding: 14px 18px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+  }
+  #padSignal .signal-title {
+    font-size: 12px; color: #888; margin-bottom: 8px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.6px;
+  }
+  #shortageList {
+    font-size: 13px; color: #dc2626; font-weight: 600;
+    min-height: 20px;
+  }
+  #shortageCount {
+    font-size: 13px; color: #1a1a2e; margin-top: 4px;
+  }
+</style>
+</head>
+<body>
+
+<h2>재고 모니터링 시스템</h2>
+<div class="subtitle">실시간 재고 현황을 모니터링합니다 · PAD 실습용</div>
+
+<div class="controls">
+  <button class="btn-start" id="btnStart" onclick="startSimulation()">▶ 재고 감소 시뮬레이션 시작</button>
+  <button class="btn-stop"  id="btnStop"  onclick="stopSimulation()" style="display:none">■ 중지</button>
+  <span id="timerDisplay"></span>
+</div>
+
+<table id="stockTable">
+  <thead>
+    <tr>
+      <th>품목코드</th>
+      <th>품목명</th>
+      <th>카테고리</th>
+      <th>현재고</th>
+      <th>안전재고</th>
+      <th>담당자</th>
+      <th>상태</th>
+    </tr>
+  </thead>
+  <tbody id="stockBody">
+    <tr>
+      <td>ITM-001</td><td>A4 복사지 (500매)</td><td>사무용품</td>
+      <td class="qty-cell" id="qty-ITM-001">85</td>
+      <td>50</td><td>김민준</td>
+      <td id="status-ITM-001" class="status-정상">정상</td>
+    </tr>
+    <tr>
+      <td>ITM-002</td><td>볼펜 (검정, 12개입)</td><td>사무용품</td>
+      <td class="qty-cell" id="qty-ITM-002">60</td>
+      <td>30</td><td>김민준</td>
+      <td id="status-ITM-002" class="status-정상">정상</td>
+    </tr>
+    <tr>
+      <td>ITM-003</td><td>토너 카트리지 (흑백)</td><td>프린터 소모품</td>
+      <td class="qty-cell" id="qty-ITM-003">12</td>
+      <td>5</td><td>이서연</td>
+      <td id="status-ITM-003" class="status-정상">정상</td>
+    </tr>
+    <tr>
+      <td>ITM-004</td><td>포스트잇 (노랑, 100매)</td><td>사무용품</td>
+      <td class="qty-cell" id="qty-ITM-004">70</td>
+      <td>50</td><td>박지훈</td>
+      <td id="status-ITM-004" class="status-정상">정상</td>
+    </tr>
+    <tr>
+      <td>ITM-005</td><td>USB 허브 (4포트)</td><td>IT 장비</td>
+      <td class="qty-cell" id="qty-ITM-005">18</td>
+      <td>8</td><td>이서연</td>
+      <td id="status-ITM-005" class="status-정상">정상</td>
+    </tr>
+    <tr>
+      <td>ITM-006</td><td>스테이플러 침 (1000개)</td><td>사무용품</td>
+      <td class="qty-cell" id="qty-ITM-006">120</td>
+      <td>50</td><td>박지훈</td>
+      <td id="status-ITM-006" class="status-정상">정상</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- PAD 전용 인식 영역 -->
+<div id="padSignal">
+  <div class="signal-title">PAD 인식 영역 — 부족 품목 현황</div>
+  <div id="shortageList">없음</div>
+  <div id="shortageCount">부족 품목 수: 0</div>
+</div>
+
+<script>
+  // 품목별 감소 설정: [감소량/회, 최솟값]
+  const decreaseConfig = {
+    'ITM-001': [8,  0],
+    'ITM-002': [6,  0],
+    'ITM-003': [2,  0],
+    'ITM-004': [10, 0],
+    'ITM-005': [3,  0],
+    'ITM-006': [5,  0],
+  };
+
+  const safeStock = {
+    'ITM-001': 50, 'ITM-002': 30, 'ITM-003': 5,
+    'ITM-004': 50, 'ITM-005': 8,  'ITM-006': 50,
+  };
+
+  const currentQty = {
+    'ITM-001': 85, 'ITM-002': 60, 'ITM-003': 12,
+    'ITM-004': 70, 'ITM-005': 18, 'ITM-006': 120,
+  };
+
+  let timer = null;
+  let elapsed = 0;
+
+  function getStatus(qty, safe) {
+    if (qty <= safe * 0.5) return '부족';
+    if (qty <= safe)       return '주의';
+    return '정상';
+  }
+
+  function updateTable() {
+    let shortageItems = [];
+
+    for (const code in currentQty) {
+      const qty    = currentQty[code];
+      const safe   = safeStock[code];
+      const status = getStatus(qty, safe);
+
+      const qtyEl    = document.getElementById('qty-' + code);
+      const statusEl = document.getElementById('status-' + code);
+
+      qtyEl.textContent = qty;
+      qtyEl.className   = 'qty-cell' + (status === '부족' ? ' qty-low' : '');
+
+      statusEl.textContent = status;
+      statusEl.className   = 'status-' + status;
+
+      if (status === '부족') shortageItems.push(code);
+    }
+
+    // PAD 인식 영역 업데이트
+    const listEl  = document.getElementById('shortageList');
+    const countEl = document.getElementById('shortageCount');
+
+    if (shortageItems.length > 0) {
+      listEl.textContent  = shortageItems.join(', ');
+      countEl.textContent = '부족 품목 수: ' + shortageItems.length;
+    } else {
+      listEl.textContent  = '없음';
+      countEl.textContent = '부족 품목 수: 0';
+    }
+  }
+
+  function tick() {
+    elapsed++;
+    document.getElementById('timerDisplay').textContent = '경과: ' + elapsed * 10 + '초';
+
+    for (const code in currentQty) {
+      const [dec, min] = decreaseConfig[code];
+      currentQty[code] = Math.max(min, currentQty[code] - dec);
+    }
+    updateTable();
+  }
+
+  function startSimulation() {
+    if (timer) return;
+    document.getElementById('btnStart').style.display = 'none';
+    document.getElementById('btnStop').style.display  = 'inline-block';
+    timer = setInterval(tick, 10000);
+    tick(); // 즉시 1회 실행
+  }
+
+  function stopSimulation() {
+    clearInterval(timer);
+    timer = null;
+    document.getElementById('btnStart').style.display = 'inline-block';
+    document.getElementById('btnStop').style.display  = 'none';
+    document.getElementById('timerDisplay').textContent = '중지됨';
+  }
+</script>
+
+</body>
+</html>

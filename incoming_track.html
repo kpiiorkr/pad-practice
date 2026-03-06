@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>입고 추적 시스템</title>
+<style>
+  body { font-family: '맑은 고딕', sans-serif; background: #f0f2f5; padding: 32px; color: #1a1a2e; }
+  h2 { font-size: 20px; font-weight: 700; margin-bottom: 4px; color: #1a1a2e; }
+  .subtitle { font-size: 13px; color: #888; margin-bottom: 28px; }
+
+  .section-title {
+    font-size: 13px; font-weight: 700; color: #2563eb;
+    text-transform: uppercase; letter-spacing: 0.8px;
+    margin-bottom: 12px; margin-top: 28px;
+  }
+
+  table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 6px rgba(0,0,0,0.07); margin-bottom: 8px; }
+  th { background: #1e3a5f; color: #fff; padding: 11px 14px; text-align: left; font-size: 13px; font-weight: 600; }
+  td { padding: 11px 14px; font-size: 13px; border-bottom: 1px solid #eef0f4; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #f5f8ff; }
+
+  .status-입고완료 { color: #16a34a; font-weight: 700; }
+  .status-미입고   { color: #dc2626; font-weight: 700; }
+  .status-부분입고 { color: #d97706; font-weight: 700; }
+
+  .badge-blue { background: #eff4ff; color: #2563eb; padding: 2px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<h2>입고 추적 시스템</h2>
+<div class="subtitle">발주 대비 입고 현황을 관리합니다 · PAD 실습용</div>
+
+<!-- 발주 현황 테이블 -->
+<div class="section-title">발주 현황</div>
+<table id="orderTable">
+  <thead>
+    <tr>
+      <th>발주번호</th>
+      <th>품목코드</th>
+      <th>품목명</th>
+      <th>발주수량</th>
+      <th>발주일자</th>
+      <th>납품희망일</th>
+      <th>협력사</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>ORD-20250301-001</td><td>ITM-001</td><td>A4 복사지 (500매)</td><td>100</td><td>2025-03-01</td><td>2025-03-10</td><td>대한문구</td></tr>
+    <tr><td>ORD-20250301-002</td><td>ITM-002</td><td>볼펜 (검정, 12개입)</td><td>50</td><td>2025-03-01</td><td>2025-03-10</td><td>대한문구</td></tr>
+    <tr><td>ORD-20250302-003</td><td>ITM-003</td><td>토너 카트리지 (흑백)</td><td>10</td><td>2025-03-02</td><td>2025-03-08</td><td>프린텍</td></tr>
+    <tr><td>ORD-20250302-004</td><td>ITM-004</td><td>포스트잇 (노랑, 100매)</td><td>80</td><td>2025-03-02</td><td>2025-03-12</td><td>대한문구</td></tr>
+    <tr><td>ORD-20250303-005</td><td>ITM-005</td><td>USB 허브 (4포트)</td><td>15</td><td>2025-03-03</td><td>2025-03-11</td><td>아이티존</td></tr>
+    <tr><td>ORD-20250303-006</td><td>ITM-006</td><td>스테이플러 침 (1000개)</td><td>30</td><td>2025-03-03</td><td>2025-03-09</td><td>대한문구</td></tr>
+  </tbody>
+</table>
+
+<!-- 입고 실적 테이블 -->
+<div class="section-title">입고 실적</div>
+<table id="incomingTable">
+  <thead>
+    <tr>
+      <th>발주번호</th>
+      <th>품목코드</th>
+      <th>품목명</th>
+      <th>발주수량</th>
+      <th>입고수량</th>
+      <th>입고일자</th>
+      <th>입고상태</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>ORD-20250301-001</td><td>ITM-001</td><td>A4 복사지 (500매)</td><td>100</td><td>100</td><td>2025-03-09</td><td class="status-입고완료">입고완료</td></tr>
+    <tr><td>ORD-20250301-002</td><td>ITM-002</td><td>볼펜 (검정, 12개입)</td><td>50</td><td>0</td><td>-</td><td class="status-미입고">미입고</td></tr>
+    <tr><td>ORD-20250302-003</td><td>ITM-003</td><td>토너 카트리지 (흑백)</td><td>10</td><td>0</td><td>-</td><td class="status-미입고">미입고</td></tr>
+    <tr><td>ORD-20250302-004</td><td>ITM-004</td><td>포스트잇 (노랑, 100매)</td><td>80</td><td>40</td><td>2025-03-10</td><td class="status-부분입고">부분입고</td></tr>
+    <tr><td>ORD-20250303-005</td><td>ITM-005</td><td>USB 허브 (4포트)</td><td>15</td><td>15</td><td>2025-03-10</td><td class="status-입고완료">입고완료</td></tr>
+    <tr><td>ORD-20250303-006</td><td>ITM-006</td><td>스테이플러 침 (1000개)</td><td>30</td><td>0</td><td>-</td><td class="status-미입고">미입고</td></tr>
+  </tbody>
+</table>
+
+</body>
+</html>
